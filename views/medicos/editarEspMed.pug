@@ -1,0 +1,142 @@
+
+//- //- extends ../layout
+
+//- //- block contenido
+//- //-     .container
+//- //-         h1 Modificar Especialidad
+//- //-         if errorMessage
+//- //-             .alert.alert-danger= errorMessage
+//- //-         form(action=`/especialidades/update/${especialidad.id}` method="POST" id="editar-form" class="needs-validation" novalidate)
+//- //-             .mb-3
+//- //-                 label(for="nombre" class="form-label") Nombre:
+//- //-                 input(type="text" name="nombre" id="nombre" class="form-control" required)
+//- //-             button(type="submit" class="btn btn-primary") Actualizar Especialidad
+//- extends ../layout
+
+//- block contenido
+//-     a(href="/medicos" class="btn btn-outline-dark") Volver
+    
+//-     .container
+//-         h1 Especialidades
+        
+//-         if successMessage
+//-             .alert.alert-success= successMessage
+//-         a.btn.btn-primary(href="/especialidades/create") Agregar Especialidad      
+
+//-         ul.list-group
+//-             each especialidad in especialidades
+//-                 li.list-group-item
+//-                     //- Nombre de la especialidad
+//-                     span.especialidad-nombre= especialidad.nombre
+
+//-                     //- Formulario de edición (oculto inicialmente)
+//-                     form.edit-form(action=`/especialidades/update/${especialidad.id}`, method='post' style="display: none;")
+//-                         input.form-control(type="text" name="nombre" value=especialidad.nombre required)
+//-                         textarea.form-control(name="descripcion" rows="3" required)= especialidad.descripcion
+//-                         input.form-control(type="text" name="direccion" value=especialidad.direccion required)
+//-                         button.btn.btn-success(type="submit") Guardar
+
+//-                     //- Mostrar las matrículas asociadas a la especialidad, si existen
+//-                     if especialidad.matriculas && especialidad.matriculas.length > 0
+//-                         ul.matriculas-list(style="margin-top: 10px; padding-left: 20px;")
+//-                             each matricula in especialidad.matriculas
+//-                                 li.list-group-item.matricula-item
+//-                                     span= `Matrícula N°: ${matricula.numero}, Estado: ${matricula.estado}`
+
+//-                     //- Grupo de botones
+//-                     .button-group(style="display: flex; gap: 10px; margin-top: 5px;")
+//-                         button.btn.btn-primary(type="button" onclick=`toggleEditForm(${especialidad.id})` class="btn btn-primary btn-sm") Modificar
+
+//-                         if especialidad.estado == 1                       
+//-                             form(action=`/especialidades/inactivar/${especialidad.id}`, method='post' id=`inactivar-form-${especialidad.id}`)
+//-                                 button(type='submit' class="btn btn-danger btn-sm") Inactivar
+//-                         else
+//-                             form(action=`/especialidades/activar/${especialidad.id}`, method='post' id=`activar-form-${especialidad.id}`)
+//-                                 button(type='submit' class="btn btn-success btn-sm") Activar
+
+//-     //- Script para mostrar/ocultar el formulario de edición y permitir solo uno a la vez
+//-     script.
+//-         let activeEditForm = null;
+
+//-         function toggleEditForm(id) {
+//-             const editForm = document.querySelector(`form.edit-form[action='/especialidades/update/${id}']`);
+//-             const nombreSpan = editForm.previousElementSibling;
+
+//-             // Si hay un formulario activo y no es el actual, lo cerramos
+//-             if (activeEditForm && activeEditForm !== editForm) {
+//-                 activeEditForm.style.display = 'none';
+//-                 activeEditForm.previousElementSibling.style.display = 'block';
+//-             }
+
+//-             // Alternar el estado del formulario actual
+//-             if (editForm.style.display === 'none') {
+//-                 editForm.style.display = 'block';
+//-                 nombreSpan.style.display = 'none';
+//-                 activeEditForm = editForm; // Actualizamos el formulario activo
+//-             } else {
+//-                 editForm.style.display = 'none';
+//-                 nombreSpan.style.display = 'block';
+//-                 activeEditForm = null; // Ningún formulario está activo
+//-             }
+//-         }
+extends ../layout
+
+block contenido
+    a(href="/pacientes" class="btn btn-outline-dark") Volver
+    
+    .container
+        h1 Especialidad/es del Dr 
+        
+        if successMessage
+            .alert.alert-success= successMessage
+        //-a.btn.btn-primary(href="/especialidades/create") Agregar Especialidad      
+
+        table.table.table-striped
+            thead
+                tr
+                    th Id Medico
+                    th Id Especialidad
+                
+                    th Nombre Especialidad
+                    th Matrícula
+            tbody
+                each especialidad in especialidades
+                    tr
+                        td= especialidad.idmedico                        
+                        td= especialidad.Id
+                        td= especialidad.nombreEsp
+                        td= especialidad.matricula
+                        
+                        //td= especialidad.matriculas.join(", ")
+
+                    // Optional buttons for editing, activating/inactivating
+                    td
+                        .button-group(style="display: flex; gap: 10px;")
+                            button.btn.btn-primary(type="button" onclick=`toggleEditForm(${especialidad.Id})` class="btn btn-primary btn-sm") Modificar
+
+                            if especialidad.estado == 1
+                                form(action=`/medicos/inactivarEsp/${especialidad.Id}`, method='post' id=`inactivar-form-${especialidad.id}`)
+                                    input(type='hidden' name='id_medico' value='${especialidad.idmedico}')
+                                    input(type='hidden' name='id_especialidad' value='${especialidad.Id}')
+                                    button(type='submit' class='btn btn-danger btn-sm') Inactivar                       
+                                //- form(action=`/medicos/inactivarEsp/${especialidad.Id},`, method='post' id=`inactivar-form-${especialidad.id}`)
+                                //-     button(type='submit' class="btn btn-danger btn-sm") Inactivar
+                            else
+                                form(action=`/medicos/activarEsp/${especialidad.Id}`, method='post' id=`activar-form-${especialidad.id}`)
+                                    button(type='submit' class="btn btn-success btn-sm") Activar
+
+        a.btn.btn-primary(href="/especialidades/create") Agregar Especialidad  
+    //- Script for toggling edit form
+    script.
+        let activeEditForm = null;
+
+        function toggleEditForm(id) {
+            const editForm = document.querySelector(`form.edit-form[action='/especialidades/update/${id}']`);
+            if (activeEditForm && activeEditForm !== editForm) {
+                activeEditForm.style.display = 'none';
+            }
+            editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+            activeEditForm = editForm;
+        }
+
+

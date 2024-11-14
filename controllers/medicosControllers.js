@@ -325,6 +325,48 @@ class MedicosController {
             next(error);
         }
     }
+
+    async editarEspecialidades(req, res, next) {
+        try {
+            const { dni } = req.params;
+            const especialidades = await Medico.getEspecialidadesByDni(dni);
+            if (!especialidades) {
+                return res.status(404).json({ message: 'Error al obtener las especialidades desde MedicoController' });
+
+            }
+            res.render('medicos/editarEspMed', { especialidades });
+           // res.json(especialidades);
+        } catch (error) {    
+            next(error);
+        }
+    }
+
+    async activarEspecialidad(req, res, next) {
+        try {
+            const { id } = req.params;
+            const especialidad = await Medico.activarEspecialidad(id);
+            if (!especialidad) {
+                return res.status(404).json({ message: 'Error al activar la especialidad desde MedicoController' });
+            }
+            res.redirect(`medicos/editarEspMed`);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async inactivarEspecialidad(req, res, next) {
+        try {
+            const { id } = req.params;
+            console.log('id especialidad', id);
+            const especialidad = await Medico.inactivarEspecialidad(id);
+            if (!especialidad) {
+                return res.status(404).json({ message: 'Error al inactivar la especialidad desde MedicoController' });
+            }
+            res.redirect(`medicos/editarEspMed`);
+        } catch (error) {
+            next(error);
+        }
+    }
    
 }
 

@@ -95,60 +95,63 @@ block contenido
       select(name="matriculas" class="form-select small-width" required)
         each matricula, index in matriculas || []
           option(value=matricula)= `${matricula} (${especialidades[index]})`
+        
+
 
   div.center-buttons
-    a(href="/medicos/especialidad" class="btn btn-primary mt-3") Gestionar Especialidades
+    a(href=`/medicos/editarEsp/${persona.dni}` class="btn btn-primary mt-3") Gestionar Especialidades
+    //a(href="/medicos/especialidad" class="btn btn-primary mt-3") Gestionar Especialidades
   script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous")
   script(src="/js/medicos.js")
   script.
     // Llamar a la función para ocultar el campo cuando la página se carga
     document.addEventListener('DOMContentLoaded', toggleFieldVisibility);
-  //- script. 
-  //-       function confirmDelete(dni) { 
-  //-           Swal.fire({ 
-  //-               title: '¿Estás seguro?',
-  //-               text: "¡No podrás revertir esto!",
-  //-               icon: 'warning', 
-  //-               showCancelButton: true,
-  //-               confirmButtonColor: '#3085d6', 
-  //-               cancelButtonColor: '#d33', 
-  //-               confirmButtonText: 'Sí, eliminarlo!' 
-  //-           }).then((result) => { 
-  //-               if (result.isConfirmed) {
-  //-                   // Lógica para eliminar la agenda 
-  //-                   deleteAgenda(id); 
-  //-               }
-  //-           }); 
-  //-       }
+  script. 
+        function confirmDelete(dni) { 
+            Swal.fire({ 
+                title: '¿Estás seguro?',
+                text: "¡No podrás revertir esto!",
+                icon: 'warning', 
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6', 
+                cancelButtonColor: '#d33', 
+                confirmButtonText: 'Sí, eliminarlo!' 
+            }).then((result) => { 
+                if (result.isConfirmed) {
+                    // Lógica para eliminar la agenda 
+                    deleteAgenda(id); 
+                }
+            }); 
+        }
 
-  //-       function deleteAgenda(id) { 
-  //-           fetch(`/agendas/${id}`, { 
-  //-               method: 'DELETE' 
-  //-           }).then(response => { 
-  //-               if (response.ok) { 
-  //-                   Swal.fire( 
-  //-                       'Eliminado!', 
-  //-                       'La agenda ha sido eliminada.', 
-  //-                       'success' 
-  //-                   ).then(() => {
-  //-                       //refresca la pagina despues de eliminar
-  //-                       location.reload()
-  //-                   })
-  //-                   // Actualiza la tabla o realiza cualquier otra acción necesaria 
-  //-               } else { 
-  //-                   Swal.fire( 
-  //-                       'Error!',
-  //-                       'Hubo un problema al eliminar la agenda.', 
-  //-                       'error'
-  //-                    ); 
-  //-               }
-  //-           })
-  //-           .catch(error => { 
-  //-               Swal.fire( 
-  //-                   'Error!', 
-  //-                   'Hubo un problema al eliminar la agenda.', 
-  //-                   'error' 
-  //-               ); 
-  //-           }); 
-  //-       }  
+        function deleteAgenda(id) { 
+            fetch(`/agendas/${id}`, { 
+                method: 'DELETE' 
+            }).then(response => { 
+                if (response.ok) { 
+                    Swal.fire( 
+                        'Eliminado!', 
+                        'La agenda ha sido eliminada.', 
+                        'success' 
+                    ).then(() => {
+                        //refresca la pagina despues de eliminar
+                        location.reload()
+                    })
+                    // Actualiza la tabla o realiza cualquier otra acción necesaria 
+                } else { 
+                    Swal.fire( 
+                        'Error!',
+                        'Hubo un problema al eliminar la agenda.', 
+                        'error'
+                     ); 
+                }
+            })
+            .catch(error => { 
+                Swal.fire( 
+                    'Error!', 
+                    'Hubo un problema al eliminar la agenda.', 
+                    'error' 
+                ); 
+            }); 
+        }  
 

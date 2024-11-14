@@ -16,18 +16,48 @@ class Medico extends Usuario {
         try {
             conn = await createConnection();
             const [medicos] = await conn.query(`
-                SELECT u.id, u.dni, p.nombre, p.apellido, p.nacimiento, u.email, u.password, 
-                u.id_rol, m.estado, GROUP_CONCAT(DISTINCT e.nombre SEPARATOR ', ') AS especialidades, 
-                GROUP_CONCAT(DISTINCT me.matricula SEPARATOR ', ') AS matriculas, GROUP_CONCAT(DISTINCT t.numero SEPARATOR ', ') AS telefonos, GROUP_CONCAT(DISTINCT os.nombre SEPARATOR ', ') AS obras_sociales
-                FROM medicos m 
-                JOIN usuarios u ON m.id_usuario = u.id 
-                JOIN personas p ON u.dni = p.dni 
-                LEFT JOIN medico_especialidad me ON m.id_usuario = me.id_medico
-                LEFT JOIN medico_obra_social mo on m.id_usuario = mo.id_medico
-                JOIN obras_sociales os ON mo.id_obra_social = os.id
-                LEFT JOIN especialidades e ON me.id_especialidad = e.id 
-                LEFT JOIN telefonos t ON u.id = t.id_usuario 
-                GROUP BY u.id;
+                SELECT 
+    u.id, 
+    u.dni, 
+    p.nombre, 
+    p.apellido, 
+    p.nacimiento, 
+    u.email, 
+    u.password, 
+    u.id_rol, 
+    m.estado, 
+    GROUP_CONCAT(DISTINCT e.nombre SEPARATOR ', ') AS especialidades, 
+    GROUP_CONCAT(DISTINCT me.matricula SEPARATOR ', ') AS matriculas, 
+    GROUP_CONCAT(DISTINCT t.numero SEPARATOR ', ') AS telefonos, 
+    GROUP_CONCAT(DISTINCT os.nombre SEPARATOR ', ') AS obras_sociales
+FROM 
+    medicos m 
+JOIN 
+    usuarios u ON m.id_usuario = u.id 
+JOIN 
+    personas p ON u.dni = p.dni 
+LEFT JOIN 
+    medico_especialidad me ON m.id_usuario = me.id_medico
+LEFT JOIN 
+    medico_obra_social mo ON m.id_usuario = mo.id_medico
+LEFT JOIN 
+    obras_sociales os ON mo.id_obra_social = os.id
+LEFT JOIN 
+    especialidades e ON me.id_especialidad = e.id 
+LEFT JOIN 
+    telefonos t ON u.id = t.id_usuario 
+GROUP BY 
+    u.id, 
+    u.dni, 
+    p.nombre, 
+    p.apellido, 
+    p.nacimiento, 
+    u.email, 
+    u.password, 
+    u.id_rol, 
+    m.estado;
+
+            
             `);
 
             return medicos.map(medico => new Medico(
@@ -133,6 +163,39 @@ class Medico extends Usuario {
             if (conn) conn.end();
         }
     }
+
+    static async getEspecialidadesByDni(dni) {
+        let conn;
+        try {
+            conn = await createConnection();
+            const [medico_especialidad] = await conn.query(`
+               SELECT 
+                    me.id_especialidad AS Id,
+                    e.nombre AS nombreEsp,
+                    GROUP_CONCAT(me.matricula) AS matricula,
+                    me.id_medico AS idmedico,
+                    me.estado
+                FROM 
+                    medico_especialidad me 
+                LEFT JOIN 
+                    especialidades e ON me.id_especialidad = e.id 
+                JOIN 
+                    usuarios u ON me.id_medico = u.id 
+                WHERE 
+                    u.dni = ?
+                GROUP BY 
+                    me.id_especialidad, e.nombre, me.estado,me.id_medico;
+            `, [dni]);
+
+            return medico_especialidad;
+        } catch (error) {
+            console.error('Error fetching especialidades, matricula, and estado:', error);
+            throw new Error('Error al traer especialidades, matrícula y estado desde el modelo');
+        } finally {
+            if (conn) conn.end();
+        }
+    }
+
 
     static async getMedicoById(id) {
         console.log(`Model: getByDni medico id: ${id}`);
@@ -249,6 +312,75 @@ class Medico extends Usuario {
             throw new Error('Error al activar médico desde el modelo');
         }
     }
+    static async activarEspecialidad(id) {
+        console.log('Model Medico: activar Especialidad medico');
+        try {
+            const conn = await createConnection();
+            const query = 'UPDATE medico_especialidad SET estado = 1 WHERE id_especialidad = ?';
+            const [result] = await conn.query(query, [id]);  
+
+            console.log('Resultado de la consulta SQL:', result);
+            console.log('Filas afectadas:', result.affectedRows);
+
+            if (result.affectedRows === 0) {
+                throw new Error('No se encontró la especialidad con el id proporcionado');
+            }
+
+            console.log('Model: Especialidad activada exitosamente');
+            return result.affectedRows === 1;
+        } catch (error) {
+            console.error('Error al activar especialidad desde el modelo:', error);
+            throw new Error('Error al activar especialidad desde el modelo');
+        }
+    }
+// static async inactivarEspecialidad(id) {
+//     console.log('Model Medico: inactivar Especialidad Medico');
+//     console.log(id);
+//     try {    
+//         const conn = await createConnection();
+//         const query = 'UPDATE medico_especialidad SET estado = 0 WHERE id_especialidad = ?';
+//         const [result] = await conn.query(query, [id]);  
+
+//         console.log('Resultado de la consulta SQL:', result);    
+//         console.log('Filas afectadas:', result.affectedRows);
+
+//         if (result.affectedRows === 0) {    
+//             throw new Error('No se encontró la especialidad con el id proporcionado');
+//         }
+
+//         console.log('Model: Especialidad inactivada exitosamente');
+//         return result.affectedRows === 1;
+//     } catch (error) {
+//         console.error('Error al inactivar especialidad desde el modelo:', error);
+//         throw new Error('Error al inactivar especialidad desde el modelo');
+//     }   
+
+//     }
+static async inactivarEspecialidad(id_medico, id_especialidad) {
+    console.log('Model Medico: inactivar Especialidad Medico');
+    console.log(`id_medico: ${id_medico}, id_especialidad: ${id_especialidad}`);
+    try {    
+        const conn = await createConnection();
+        const query = 'UPDATE medico_especialidad SET estado = 0 WHERE id_medico = ? AND id_especialidad = ?';
+        const [result] = await conn.query(query, [id_medico, id_especialidad]);  
+
+        console.log('Resultado de la consulta SQL:', result);    
+        console.log('Filas afectadas:', result.affectedRows);
+
+        if (result.affectedRows === 0) {    
+            throw new Error('No se encontró la especialidad con el id proporcionado');
+        }
+
+        console.log('Model: Especialidad inactivada exitosamente');
+        return result.affectedRows === 1;
+    } catch (error) {
+        console.error('Error al inactivar especialidad desde el modelo:', error);
+        throw new Error('Error al inactivar especialidad desde el modelo');
+    } finally {
+        if (conn) conn.end();
+    }
+}
+
 }
 module.exports = Medico;
 
